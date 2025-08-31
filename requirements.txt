@@ -1,0 +1,8 @@
+selenium
+webdriver_manager
+discord
+pynacl
+alive_progress
+pytube
+py-cord
+openai-whisper
