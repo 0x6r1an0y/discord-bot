@@ -54,6 +54,7 @@ async def speech_to_text(folder_path):
         #print(result["text"])
         if result["text"] != "": #有講話才傳出東西
             print("有講話")
+            
             await bot.get_channel(1134498022517116968).send(str(user_name) + " : " + str(result["text"]))
             # 傳送result["text"]到學術探討研究群的語音頻道log
         else:

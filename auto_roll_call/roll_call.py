@@ -5,7 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import sys,os
 sys.path.append(os.getcwd())
-from mod.addlog import serverlog, botlog#不要用print()，而是用bot().debug()或sever.info()等等
+from mod.addlog import serverlog, botlog#不要用print()，而是用botlog().debug()或sever.info()等等
 import asyncio
 
 class auto_roll_call():
@@ -67,7 +67,7 @@ class auto_roll_call():
             if not_open:
                 messageout = ("🟥警告❌，點名並沒有開放，請稍後再試或自行手點，全數點名失敗\n")
                 if not test:
-                    bot().debug(messageout)
+                    botlog().debug(messageout)
             else:
                 await self.open_tab()
                 await self.login()
@@ -89,7 +89,7 @@ class auto_roll_call():
             wd.switch_to.window(wd.window_handles[i+1])
             wd.get(url)#打開所有對應數量的分頁並到網址
             if not test:
-                bot().debug("已打開第"+ str(i) + "個分頁")
+                botlog().debug("已打開第"+ str(i) + "個分頁")
 
     async def login(self):
         test = self.test
@@ -100,7 +100,7 @@ class auto_roll_call():
             wd.execute_script('document.getElementById("UserNm").value ="' + usr + '"')
             wd.execute_script('document.getElementById("UserPasswd").value ="' + pwd + '"')
             if not test:
-                bot().debug("已填入登入第"+ str(i) + "個分頁")
+                botlog().debug("已填入登入第"+ str(i) + "個分頁")
         
     def message_print(self)->str:
         test = self.test
@@ -111,7 +111,7 @@ class auto_roll_call():
             wd.switch_to.window(wd.window_handles[i+1])#先跑到對應的視窗
             wd.execute_script('document.getElementsByClassName("w3-button w3-block w3-green w3-section w3-padding")[0].click();')
             if not test:
-                bot().debug("已點擊登入第"+ str(i) + "個分頁")
+                botlog().debug("已點擊登入第"+ str(i) + "個分頁")
             password_wrong = EC.alert_is_present()(wd)#如果有錯誤訊息#不太確定要先切換視窗再按確認還是反過來
             if password_wrong:
                 try:
@@ -130,13 +130,13 @@ class auto_roll_call():
                     if "簽到未開放" in fail_msg:
                         information = ("🟥警告❌，點名尚未開始，請稍後再試，全數點名失敗\n")
                         if not test:
-                            bot().debug("🟥警告❌，點名尚未開始")
+                            botlog().debug("🟥警告❌，點名尚未開始")
                         break
                 except NoSuchElementException:#找不到#D06079就會是成功#73AF55
                     detailmsg = wd.find_element(by=By.XPATH,value= "/html/body/div[1]/div[3]/div").text
                     information += ("\n🟩點名成功✅，"+ name +"會非常感謝你\n成功訊息:" + detailmsg.replace('&#x6708;','月').replace('&#x65e5;','日').replace('&#x3a;',':').replace('<br>','\n')+'\n\n')
         information = information + time_and_classname
-        #bot().debug(information)
+        #botlog().debug(information)
         return information
 
 async def test_wrapper(url_and_user_data):

@@ -38,10 +38,12 @@ counter_for_MOTD = 0
 
  #--------------------------------------------------------------------------------------------
  
-async def penalty_button_kick(interaction: discord.Interaction)-> None:
+async def penalty_button_kick(interaction: discord.interactions.Interaction)-> None:
     # 如果不interaction.response 會顯示此交互失敗
     # ephemeral parameter就是傳送只有當事人看的到的訊息
-    user_id: int = interaction.user.id
+
+    user_obj: discord.member.Member = interaction.user
+    user_id: int = user_obj.id
     # 不能透過bot.guild來fetch guild 會有問題
     guild_object: discord.Guild = interaction.guild
     user_object: discord.Member = await guild_object.fetch_member(user_id) #aka perpetrator

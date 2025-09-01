@@ -24,7 +24,7 @@ class japan:
                 price = f.read()
             japan_previous_price = price
         except:
-            bot().error("抓取價格數據失敗")
+            botlog().error("抓取價格數據失敗")
 
     def set_variable(self,value):
         try:
@@ -32,14 +32,14 @@ class japan:
                 f.write(str(value))
             self.get_variable()
         except:
-            bot().error("覆蓋價格數據失敗")
+            botlog().error("覆蓋價格數據失敗")
 
     def webhook(self,payload)->int:
         try:
             data = {"content": str(payload)}
             response = requests.post(webhook_url, json=data)
         except:
-            bot().error("webhook傳出失敗")
+            botlog().error("webhook傳出失敗")
         return response.status_code
 
     def check_airline_price(self):
@@ -47,7 +47,7 @@ class japan:
         try:
             self.create_uc_object()
         except:
-            bot().error("建立瀏覽器物件失敗")
+            botlog().error("建立瀏覽器物件失敗")
             wd.quit()
 
         try:
@@ -59,16 +59,16 @@ class japan:
             wd.get(url2)
             time.sleep(3)
         except:
-            bot().error("導覽網頁失敗")
+            botlog().error("導覽網頁失敗")
             wd.quit()
 
         #try:
             #wd.find_element(by=By.XPATH, value= "/html/body/div[3]/div/div/main/div/div[1]/div[2]/div[2]/div/div/div/section/div/div[4]/button").click()
-            #bot().debug("已點擊")
+            #botlog().debug("已點擊")
             #time.sleep(2)
         #except:
             #wd.get_screenshot_as_file("screenshot.png")
-            #bot().error("查詢價格按鈕失敗")
+            #botlog().error("查詢價格按鈕失敗")
             #wd.quit()
         try:
             self.get_variable()
@@ -77,10 +77,10 @@ class japan:
                 self.webhook("2/6 TPE->NRT 捷星價格已變動 NT$" + current_price)
                 self.set_variable(current_price)
             else:
-                bot().debug("2/6 TPE->NRT 捷星價格無變動 NT$" + current_price)
+                botlog().debug("2/6 TPE->NRT 捷星價格無變動 NT$" + current_price)
         except:
             wd.get_screenshot_as_file("screenshot.png")
-            bot().error("抓取或輸出價格失敗")
+            botlog().error("抓取或輸出價格失敗")
             wd.quit()
         wd.close()
         return
