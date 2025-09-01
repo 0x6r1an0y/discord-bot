@@ -5,7 +5,7 @@ from discord.message import Message
 check_rollcall_url = ["https://itouch.cycu.edu.tw" , "active_system/query_course/learning" , "?act_no="]
 check_music_url = ["https://youtu.be/" , "https://www.youtube.com/watch?v="]
 class message_process:
-    async def message_process(self, message:Message, bot):
+    async def message_process(message:Message, bot):
         botlog().debug(" "+ str(message.author) + "/" +str(message.guild.name) + " : " + str(message.channel) + " : " + str(message.content))
         #print(message.content)
         #print(len(message.content))

@@ -198,6 +198,18 @@ async def create_select_identity(ctx: commands.context.Context):
     embed.set_footer(text="\n\n嗯哼嗯哼嗯亨嗯亨")
     await ctx.send(embed=embed)
 
+
+@bot.command()
+async def create_status(ctx: commands.context.Context):
+    embed=discord.Embed(title="小梨酒機器人", description="最新上線時間狀態檢查", color=0x8b3c3c)
+    embed.add_field(name="最近上線時間", value="unknown", inline=True)
+    embed.add_field(name="版本", value="unknown", inline=True)
+    embed.add_field(name="最後一次更新時間", value="unknown", inline=True)
+    embed.add_field(name="記憶體", value="unknown", inline=True)
+    embed.add_field(name="延遲", value="unknown", inline=True)
+    embed.add_field(name="使用者", value="unknown", inline=True)
+    await ctx.send(embed=embed)
+
 @bot.event
 async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent):
     
@@ -238,7 +250,7 @@ async def on_message(message: discord.message.Message):
         pass
     else: #排除掉雜魚訊息後進入處理訊息模組
         #print(message)
-        msg_pros_object = await message_process.message_process(message,bot) #訊息處理，在mod/message_process裡面
+        msg_pros_object = await message_process.message_process(message, bot) #訊息處理，在mod/message_process裡面
         try:
             #print(message.attachments[0]['url']) #尚未完成qr code 圖片點名
             pass
