@@ -10,7 +10,8 @@ logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s %(filename)s %(levelname)s %(message)s",
                     datefmt="%a %d %b %Y %H:%M:%S",
                     filename=file_path,
-                    filemode="a")
+                    filemode="a",
+                    encoding="utf-8")
 
 ID,TOKEN,SERVERWEBHOOK,BOTWEBHOOK,MORNING = init()
 
