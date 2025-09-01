@@ -16,6 +16,9 @@ import os
 import time
 import nacl
 from alive_progress import alive_bar
+import datetime #給bot.py編輯時間用
+import psutil #給取得記憶體用量用
+from pathlib import Path
 from mod.environment_variables import init 
 from mod.addlog import serverlog, botlog#不要用print()，而是用botlog().debug()或severlog.info()等等
 from mod.emoji_role import * #import know_emoji_find_id,know_emoji_find_name,know_id_find_emoji,know_id_find_name,know_name_find_emoji,know_name_find_id#我就一次引入全部了
@@ -32,6 +35,11 @@ print(sys.version_info) #顯示python的版本major=3, minor=11, micro=7, releas
 VERSION = "3.0"
 ID,TOKEN,SERVERWEBHOOK,BOTWEBHOOK,MORNING = init()
 counter_for_MOTD = 0
+
+# 狀態訊息相關變數
+status_message_id = None
+status_channel = None
+bot_start_time = datetime.datetime.now()
 
 #print("\nTOKEN : "+ TOKEN)
 #print("\nID : "+ ID)
@@ -102,17 +110,50 @@ class Lijiu_bot(commands.Bot): #繼承bot
 bot = Lijiu_bot()
  #--------------------------------------------------------------------------------------------
 
-
+async def get_status_message_obj():
+    global status_message_id, status_channel, bot_start_time
+    # 重設bot啟動時間
+    bot_start_time = datetime.datetime.now()
+    
+    # 嘗試恢復現有的狀態訊息監控 (使用你提供的訊息ID)
+    if status_message_id is None:
+        try:
+            # 嘗試在所有可訪問的頻道中尋找指定的訊息ID
+            target_message_id = 1412141519577550921
+            for guild in bot.guilds:
+                for channel in guild.text_channels:
+                    try:
+                        message = await channel.fetch_message(target_message_id)
+                        if message:
+                            status_message_id = target_message_id
+                            status_channel = channel
+                            serverlog().info(f"已恢復狀態監控，頻道: {channel.name}, 訊息ID: {target_message_id}")
+                            break
+                    except discord.NotFound:
+                        continue
+                    except discord.Forbidden:
+                        continue
+                if status_message_id:
+                    break
+        except Exception as e:
+            serverlog().error(f"恢復狀態監控時發生錯誤: {e}")
+    
 @bot.event
 async def on_ready():
+    global status_message_id, status_channel, bot_start_time
     botlog().info(">>>>>>>>>已上線<<<<<<<<<")
     botlog().info('目前登入身份：' + os.getlogin() + ":" + str(bot.user))
     bot.add_view(penalty_button()) #讓機器人重新開機後還有辦法使用天罰
     
+    await get_status_message_obj()
+
     if not presence_loop.is_running():# 以防出現RuntimeError: Task is already launched and is not completed.的狀況
         presence_loop.start() 
     if not check_loop.is_running():
-        check_loop.start() 
+        check_loop.start()
+    if status_message_id and status_channel and not status_update_loop.is_running():
+        status_update_loop.start()
+        serverlog().info("狀態更新循環已啟動")
     #check_japan_airline_loop.start()#多觀察 多注意 程式有機會死在裡面 已經沒有要看日本機票票價了
     # await roll_call_test()
     
@@ -141,6 +182,62 @@ async def presence_loop():
 @tasks.loop(hours=1)
 async def check_loop():
     serverlog().info("heartbeat")
+
+@tasks.loop(seconds=10)
+async def status_update_loop():
+    global status_message_id, status_channel
+    # serverlog().debug("status_update_loop")
+    if status_message_id is None or status_channel is None:
+        # serverlog().error("status_message_id or status_channel is None")
+        return
+    
+    try:
+        # 獲取最後上線時間
+        now_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # 這是開機器人的時間
+        last_online_time = bot_start_time.strftime("%Y-%m-%d %H:%M:%S")
+        
+        # 獲取版本
+        version = VERSION
+        
+        # 獲取bot.py的最後修改時間
+        bot_file_path = Path(__file__)
+        last_modified = datetime.datetime.fromtimestamp(bot_file_path.stat().st_mtime)
+        last_update_time = last_modified.strftime("%Y-%m-%d %H:%M:%S")
+        
+        # 獲取記憶體使用量
+        process = psutil.Process()
+        memory_usage = f"{process.memory_info().rss / 1024 / 1024:.2f} MB"
+        
+        # 獲取延遲
+        latency = f"{round(bot.latency*1000)} ms"
+        
+        # 獲取伺服器和使用者數量
+        total_guilds = len(bot.guilds)
+        total_members = []
+        for guild in bot.guilds:
+            total_members.extend(guild.members)
+        total_members_count = len(set(total_members))
+        users_info = f"伺服器: {total_guilds} | 使用者: {total_members_count}"
+
+        # 更新embed
+        embed = discord.Embed(title="小梨酒機器人", description="最新上線時間狀態檢查", color=0x8b3c3c)
+        embed.add_field(name="機器人最新上線時間", value=now_time, inline=True)
+        embed.add_field(name="服務啟動時間", value=last_online_time, inline=True)
+        embed.add_field(name="腳本更新時間", value=last_update_time, inline=True)
+        embed.add_field(name="版本", value=version, inline=True)
+        embed.add_field(name="記憶體", value=memory_usage, inline=True)
+        embed.add_field(name="延遲", value=latency, inline=True)
+        embed.add_field(name="使用者", value=users_info, inline=True)
+
+        # 更新訊息
+        message = await status_channel.fetch_message(status_message_id)
+        await message.edit(embed=embed)
+        
+    except Exception as e:
+        serverlog().error(f"狀態更新失敗: {e}")
+        # 如果更新失敗，停止循環
+        status_update_loop.stop()
     
 #每12個小時監測機票
 #@tasks.loop(hours=12)
@@ -201,14 +298,27 @@ async def create_select_identity(ctx: commands.context.Context):
 
 @bot.command()
 async def create_status(ctx: commands.context.Context):
+    global status_message_id, status_channel
+    
+    # 初始化embed
     embed=discord.Embed(title="小梨酒機器人", description="最新上線時間狀態檢查", color=0x8b3c3c)
-    embed.add_field(name="最近上線時間", value="unknown", inline=True)
-    embed.add_field(name="版本", value="unknown", inline=True)
-    embed.add_field(name="最後一次更新時間", value="unknown", inline=True)
-    embed.add_field(name="記憶體", value="unknown", inline=True)
-    embed.add_field(name="延遲", value="unknown", inline=True)
-    embed.add_field(name="使用者", value="unknown", inline=True)
-    await ctx.send(embed=embed)
+    embed.add_field(name="最近上線時間", value="正在載入...", inline=True)
+    embed.add_field(name="版本", value="正在載入...", inline=True)
+    embed.add_field(name="最後一次更新時間", value="正在載入...", inline=True)
+    embed.add_field(name="記憶體", value="正在載入...", inline=True)
+    embed.add_field(name="延遲", value="正在載入...", inline=True)
+    embed.add_field(name="使用者", value="正在載入...", inline=True)
+    
+    # 發送訊息並記錄ID和channel
+    message = await ctx.send(embed=embed)
+    status_message_id = message.id
+    status_channel = ctx.channel
+    
+    # 啟動狀態更新循環
+    if not status_update_loop.is_running():
+        status_update_loop.start()
+    
+    serverlog().info(f"狀態監控已在頻道 {ctx.channel.name} 啟動，訊息ID: {message.id}")
 
 @bot.event
 async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent):
