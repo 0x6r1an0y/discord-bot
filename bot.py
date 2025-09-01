@@ -27,12 +27,13 @@ from mod.voice_chat_log import voice_chat_log
 #from mod.japan_ticket import japan
 import sys
 
-print(sys.version_info) #顯示python的版本major=3, minor=11, micro=7, releaselevel='final', serial=0
+PYTHON_VER_OBJ = sys.version_info #顯示python的版本major=3, minor=11, micro=7, releaselevel='final', serial=0
+PYTHON_VER = str(PYTHON_VER_OBJ.major) + str(PYTHON_VER_OBJ.minor) + str(PYTHON_VER_OBJ.micro)
 
 #ctx: commands.context.Context
 #不可以ctx: discord.ext.commands.context.Context
 #ctx是discord目錄下的一個資料夾 沒有寫在init裡面
-VERSION = "3.0"
+VERSION = "4.1"
 ID,TOKEN,SERVERWEBHOOK,BOTWEBHOOK,MORNING = init()
 counter_for_MOTD = 0
 
@@ -110,7 +111,7 @@ class Lijiu_bot(commands.Bot): #繼承bot
 bot = Lijiu_bot()
  #--------------------------------------------------------------------------------------------
 
-async def get_status_message_obj():
+async def status_message_initial():
     global status_message_id, status_channel, bot_start_time
     # 重設bot啟動時間
     bot_start_time = datetime.datetime.now()
@@ -145,7 +146,7 @@ async def on_ready():
     botlog().info('目前登入身份：' + os.getlogin() + ":" + str(bot.user))
     bot.add_view(penalty_button()) #讓機器人重新開機後還有辦法使用天罰
     
-    await get_status_message_obj()
+    await status_message_initial()
 
     if not presence_loop.is_running():# 以防出現RuntimeError: Task is already launched and is not completed.的狀況
         presence_loop.start() 
@@ -194,6 +195,7 @@ async def status_update_loop():
     try:
         # 獲取最後上線時間
         now_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         # 這是開機器人的時間
         last_online_time = bot_start_time.strftime("%Y-%m-%d %H:%M:%S")
         
@@ -229,6 +231,7 @@ async def status_update_loop():
         embed.add_field(name="記憶體", value=memory_usage, inline=True)
         embed.add_field(name="延遲", value=latency, inline=True)
         embed.add_field(name="使用者", value=users_info, inline=True)
+        embed.add_field(name="Python版本", value=PYTHON_VER, inline=True)
 
         # 更新訊息
         message = await status_channel.fetch_message(status_message_id)
@@ -294,31 +297,6 @@ async def create_select_identity(ctx: commands.context.Context):
     embed.add_field(name="大GG", value="按下這個標籤【👃】", inline=True)
     embed.set_footer(text="\n\n嗯哼嗯哼嗯亨嗯亨")
     await ctx.send(embed=embed)
-
-
-@bot.command()
-async def create_status(ctx: commands.context.Context):
-    global status_message_id, status_channel
-    
-    # 初始化embed
-    embed=discord.Embed(title="小梨酒機器人", description="最新上線時間狀態檢查", color=0x8b3c3c)
-    embed.add_field(name="最近上線時間", value="正在載入...", inline=True)
-    embed.add_field(name="版本", value="正在載入...", inline=True)
-    embed.add_field(name="最後一次更新時間", value="正在載入...", inline=True)
-    embed.add_field(name="記憶體", value="正在載入...", inline=True)
-    embed.add_field(name="延遲", value="正在載入...", inline=True)
-    embed.add_field(name="使用者", value="正在載入...", inline=True)
-    
-    # 發送訊息並記錄ID和channel
-    message = await ctx.send(embed=embed)
-    status_message_id = message.id
-    status_channel = ctx.channel
-    
-    # 啟動狀態更新循環
-    if not status_update_loop.is_running():
-        status_update_loop.start()
-    
-    serverlog().info(f"狀態監控已在頻道 {ctx.channel.name} 啟動，訊息ID: {message.id}")
 
 @bot.event
 async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent):
