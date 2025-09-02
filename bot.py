@@ -28,7 +28,7 @@ from mod.voice_chat_log import voice_chat_log
 import sys
 
 PYTHON_VER_OBJ = sys.version_info #顯示python的版本major=3, minor=11, micro=7, releaselevel='final', serial=0
-PYTHON_VER = str(PYTHON_VER_OBJ.major) + str(PYTHON_VER_OBJ.minor) + str(PYTHON_VER_OBJ.micro)
+PYTHON_VER:str = f"{PYTHON_VER_OBJ.major}.{PYTHON_VER_OBJ.minor}.{PYTHON_VER_OBJ.micro}"
 
 #ctx: commands.context.Context
 #不可以ctx: discord.ext.commands.context.Context
@@ -146,14 +146,14 @@ async def on_ready():
     botlog().info('目前登入身份：' + os.getlogin() + ":" + str(bot.user))
     bot.add_view(penalty_button()) #讓機器人重新開機後還有辦法使用天罰
     
-    await status_message_initial()
+    await status_message_initial() #這邊需要refactor
 
     if not presence_loop.is_running():# 以防出現RuntimeError: Task is already launched and is not completed.的狀況
         presence_loop.start() 
     if not check_loop.is_running():
         check_loop.start()
     if status_message_id and status_channel and not status_update_loop.is_running():
-        status_update_loop.start()
+        status_update_loop.start() #這邊需要refactor
         serverlog().info("狀態更新循環已啟動")
     #check_japan_airline_loop.start()#多觀察 多注意 程式有機會死在裡面 已經沒有要看日本機票票價了
     # await roll_call_test()
@@ -184,7 +184,7 @@ async def presence_loop():
 async def check_loop():
     serverlog().info("heartbeat")
 
-@tasks.loop(seconds=10)
+@tasks.loop(seconds=30)
 async def status_update_loop():
     global status_message_id, status_channel
     # serverlog().debug("status_update_loop")
@@ -212,7 +212,12 @@ async def status_update_loop():
         memory_usage = f"{process.memory_info().rss / 1024 / 1024:.2f} MB"
         
         # 獲取延遲
-        latency = f"{round(bot.latency*1000)} ms"
+        # bug fixing: cannot convert float infinity to integer
+        if bot.latency == float('inf'):
+            latency = f"暫時無法取得"
+        else:
+            latency = f"{round(bot.latency*1000)} ms"
+        # latency = f"{round(bot.latency*1000)} ms"
         
         # 獲取伺服器和使用者數量
         total_guilds = len(bot.guilds)
@@ -240,7 +245,7 @@ async def status_update_loop():
     except Exception as e:
         serverlog().error(f"狀態更新失敗: {e}")
         # 如果更新失敗，停止循環
-        status_update_loop.stop()
+        # status_update_loop.stop()
     
 #每12個小時監測機票
 #@tasks.loop(hours=12)
