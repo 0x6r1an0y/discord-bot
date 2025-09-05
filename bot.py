@@ -34,7 +34,7 @@ PYTHON_VER:str = f"{PYTHON_VER_OBJ.major}.{PYTHON_VER_OBJ.minor}.{PYTHON_VER_OBJ
 #ctx: commands.context.Context
 #不可以ctx: discord.ext.commands.context.Context
 #ctx是discord目錄下的一個資料夾 沒有寫在init裡面
-VERSION = "4.1"
+VERSION = "4.2"
 ID,TOKEN,SERVERWEBHOOK,BOTWEBHOOK,MORNING = init()
 counter_for_MOTD = 0
 
@@ -173,8 +173,10 @@ async def presence_loop():
         str(total_members_count) + "個二逼卵子在看我",
         "hihihi"
     ]
+    # reset counter_for_MOTD
     if (counter_for_MOTD >= len(presence)):
         counter_for_MOTD = 0
+
     game = discord.Game(presence[counter_for_MOTD])
     counter_for_MOTD += 1
     #end = time.time()
