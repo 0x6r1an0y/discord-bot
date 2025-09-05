@@ -1,11 +1,16 @@
 import discord
 #import hashlib
 from pytube import YouTube
+from mod.platform_config import config
 
 
 class music:
     def __init__(self):
         self.playlist_url = []
+    
+    def get_ffmpeg_executable(self):
+        """根據作業系統回傳正確的 FFmpeg 執行檔名稱"""
+        return config.get_ffmpeg_executable()
 
     async def add_play_list(self,url):
         self.playlist_url.append(url)
@@ -61,14 +66,14 @@ class music:
                 print(voice)
                 connect = await self.turn_on_player(bot,message)
                 #after 建立在play下，而非ffmpeg
-                audio = discord.FFmpegPCMAudio(executable="ffmpeg.exe", source="play_music_cache.mp3")
+                audio = discord.FFmpegPCMAudio(executable=self.get_ffmpeg_executable(), source="play_music_cache.mp3")
                 connect.play(audio, after=lambda e: print('Player error: %s' % e) if e else bot.loop.create_task(self.play_music(bot, message)))
                 #connect.play(audio)
-                #await connect.play(discord.FFmpegPCMAudio(executable="ffmpeg.exe", source="play_music_cache.mp3"), after=lambda e: self.after_play_music(bot, message))
+                #await connect.play(discord.FFmpegPCMAudio(executable=self.get_ffmpeg_executable(), source="play_music_cache.mp3"), after=lambda e: self.after_play_music(bot, message))
             else:
                 print(voice) #<discord.voice_client.VoiceClient object at 0x0000027FE09BE020>
                 voice.pause()
-                audio = discord.FFmpegPCMAudio(executable="ffmpeg.exe", source="play_music_cache.mp3")
+                audio = discord.FFmpegPCMAudio(executable=self.get_ffmpeg_executable(), source="play_music_cache.mp3")
                 voice.play(audio, after=lambda e: print('Player error: %s' % e) if e else bot.loop.create_task(self.play_music(bot, message)))
                 #voice.play(audio)        
             return False
@@ -76,7 +81,7 @@ class music:
     async def after_play_music(self,bot, message):
         connect = await self.turn_on_player(bot,message)
         #after 建立在play下，而非ffmpeg
-        audio = discord.FFmpegPCMAudio(executable="ffmpeg.exe", source="play_music_cache.mp3")
+        audio = discord.FFmpegPCMAudio(executable=self.get_ffmpeg_executable(), source="play_music_cache.mp3")
         await connect.play(audio, after=lambda e: self.after_play_music(bot, message))
         return False
 '''

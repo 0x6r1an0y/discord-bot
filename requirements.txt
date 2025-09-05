@@ -6,4 +6,3 @@ alive_progress
 pytube
 py-cord
 openai-whisper
-platform

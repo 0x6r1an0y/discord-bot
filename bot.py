@@ -240,7 +240,15 @@ async def status_update_loop():
         embed.add_field(name="延遲", value=latency, inline=True)
         embed.add_field(name="二逼卵子數", value=users_info, inline=True)
         embed.add_field(name="Python版本", value=PYTHON_VER, inline=True)
-        embed.add_field(name="運作者", value=f"{platform.node()}@{platform.platform()}", inline=True)
+        # 使用平台配置獲取更詳細的資訊
+        try:
+            from mod.platform_config import config
+            platform_info = config.get_platform_info()
+            platform_text = f"{platform_info['node']}@{platform_info['system']} {platform_info['machine']}"
+        except ImportError:
+            platform_text = f"{platform.node()}@{platform.platform()}"
+        
+        embed.add_field(name="運作者", value=platform_text, inline=True)
 
         # 更新訊息
         message = await status_channel.fetch_message(status_message_id)

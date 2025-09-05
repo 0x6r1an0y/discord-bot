@@ -5,6 +5,8 @@ auto_roll_call/useless/app.py
 /__pycache__
 mod/config/setting.json
 output/
+bot.log
+
 *.exe
 *.dll
 *.dylib

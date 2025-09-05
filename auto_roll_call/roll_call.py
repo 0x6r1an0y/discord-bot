@@ -38,17 +38,27 @@ class auto_roll_call():
 
     async def create_browzer_object(self):
         global wd
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument('--headless')#無視窗
-        chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--disable-dev-shm-usage')
-        chrome_options.add_argument('user-agent=Mozilla/5.0')
-        chrome_options.add_argument('ignore-certificate-errors')
-        chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--example-flag')
-        chrome_options.add_argument("--start-maximized")
-        chrome_options.add_argument('--disable-blink-features=AutomationControlled')
-        chrome_options.add_argument("--disable-infobars")
+        # 使用平台配置獲取優化過的 Chrome 選項
+
+        from mod.platform_config import config
+        chrome_options = config.get_chrome_options()
+
+        '''
+        except ImportError:
+            # 如果平台配置模組不可用，使用原始設定
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_argument('--headless')#無視窗
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.add_argument('--disable-dev-shm-usage')
+            chrome_options.add_argument('user-agent=Mozilla/5.0')
+            chrome_options.add_argument('ignore-certificate-errors')
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--example-flag')
+            chrome_options.add_argument("--start-maximized")
+            chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+            chrome_options.add_argument("--disable-infobars")
+        '''
+        
         wd = webdriver.Chrome(options=chrome_options)
 
     async def url_login(self,msg)->str: #main()
