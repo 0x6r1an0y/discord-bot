@@ -26,6 +26,7 @@ from mod.message_process import message_process
 from mod.voice_chat_log import voice_chat_log
 #from mod.japan_ticket import japan
 import sys
+import platform
 
 PYTHON_VER_OBJ = sys.version_info #顯示python的版本major=3, minor=11, micro=7, releaselevel='final', serial=0
 PYTHON_VER:str = f"{PYTHON_VER_OBJ.major}.{PYTHON_VER_OBJ.minor}.{PYTHON_VER_OBJ.micro}"
@@ -229,14 +230,15 @@ async def status_update_loop():
 
         # 更新embed
         embed = discord.Embed(title="小梨酒機器人", description="最新上線時間狀態檢查", color=0x8b3c3c)
-        embed.add_field(name="機器人最新上線時間", value=now_time, inline=True)
-        embed.add_field(name="服務啟動時間", value=last_online_time, inline=True)
         embed.add_field(name="腳本更新時間", value=last_update_time, inline=True)
+        embed.add_field(name="服務啟動時間", value=last_online_time, inline=True)
+        embed.add_field(name="機器人最新上線時間", value=now_time, inline=True)
         embed.add_field(name="版本", value=version, inline=True)
         embed.add_field(name="記憶體", value=memory_usage, inline=True)
         embed.add_field(name="延遲", value=latency, inline=True)
-        embed.add_field(name="使用者", value=users_info, inline=True)
+        embed.add_field(name="二逼卵子數", value=users_info, inline=True)
         embed.add_field(name="Python版本", value=PYTHON_VER, inline=True)
+        embed.add_field(name="運作者", value=f"{platform.node()}@{platform.platform()}", inline=True)
 
         # 更新訊息
         message = await status_channel.fetch_message(status_message_id)
