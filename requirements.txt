@@ -6,3 +6,8 @@ alive_progress
 pytube
 py-cord
 openai-whisper
+psutil
+requests
+undetected-chromedriver
+wmi; platform_system == "Windows"
+pywin32; platform_system == "Windows"
