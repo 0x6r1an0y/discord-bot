@@ -4,7 +4,8 @@
 # run at terminal
 # cd ~/discord-bot
 # sudo bash _init.sh
-
+chmod +x _start.sh
+chmod +x _init.sh
 
 
 
