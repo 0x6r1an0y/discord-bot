@@ -237,9 +237,25 @@ async def status_update_loop():
         embed.add_field(name="機器人最新上線時間", value=now_time, inline=True)
         embed.add_field(name="版本", value=version, inline=True)
         embed.add_field(name="記憶體", value=memory_usage, inline=True)
+        
+        # 獲取 CPU 資訊
+        try:
+            from mod.platform_config import config
+            cpu_usage = config.get_cpu_usage()
+            cpu_temp = config.get_cpu_temperature()
+        except ImportError:
+            cpu_usage = "模組載入失敗"
+            cpu_temp = "模組載入失敗"
+        except Exception as e:
+            cpu_usage = f"取得失敗: {str(e)}"
+            cpu_temp = f"取得失敗: {str(e)}"
+        
+        embed.add_field(name="cpu占用率", value=cpu_usage, inline=True)
+        embed.add_field(name="cpu溫度", value=cpu_temp, inline=True)
         embed.add_field(name="延遲", value=latency, inline=True)
         embed.add_field(name="二逼卵子數", value=users_info, inline=True)
         embed.add_field(name="Python版本", value=PYTHON_VER, inline=True)
+        
         # 使用平台配置獲取更詳細的資訊
         try:
             from mod.platform_config import config
