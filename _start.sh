@@ -4,7 +4,7 @@
 
 exec 2>error.log
 set -x
-cd "/home/brian"
+cd "/home/brian/discord-bot"
 git fetch origin
 git reset --hard origin/main
 cd "/home/brian/discord-bot"
