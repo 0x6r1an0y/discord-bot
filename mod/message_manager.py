@@ -28,7 +28,7 @@ class MessageManager:
             
         Returns:
             bool: 更新成功返回True，失敗返回False
-        """
+        """ 
         if isinstance(content, str):
             serverlog().debug(f"偵測到文字內容，使用 content 模式更新訊息 {msg_id}")
             return await self._update_message_content(msg_id, content)

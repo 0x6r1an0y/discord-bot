@@ -38,11 +38,10 @@ VERSION = "4.2"
 ID,TOKEN,SERVERWEBHOOK,BOTWEBHOOK,MORNING = init()
 counter_for_MOTD = 0
 STATUS_MSG_ID = 1412141519577550921 # 狀態訊息相關變數
-
-status_channel: MessageManager = None
 bot_start_time = datetime.datetime.now()
 
-message_manager = None # 建立訊息管理器實例 (在bot初始化後建立)
+# 初始化
+message_manager:MessageManager = None # 建立訊息管理器實例 (在bot初始化後建立)
 
  #--------------------------------------------------------------------------------------------
  
@@ -110,7 +109,7 @@ bot = Lijiu_bot()
 
 @bot.event
 async def on_ready():
-    global status_channel, bot_start_time, message_manager
+    global bot_start_time, message_manager
     botlog().info(">>>>>>>>>已上線<<<<<<<<<")
     botlog().info('目前登入身份：' + os.getlogin() + ":" + str(bot.user))
     bot.add_view(penalty_button()) #讓機器人重新開機後還有辦法使用天罰
@@ -158,9 +157,7 @@ async def check_loop():
 @tasks.loop(seconds=30)
 async def status_update_loop():
     global STATUS_MSG_ID, status_channel
-    if STATUS_MSG_ID is None or status_channel is None:
-        return
-    
+        
     try:
         # 獲取最後上線時間
         now_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
