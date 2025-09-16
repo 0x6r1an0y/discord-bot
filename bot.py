@@ -29,8 +29,7 @@ from mod.message_manager import MessageManager
 import sys
 import platform
 
-PYTHON_VER_OBJ = sys.version_info #顯示python的版本major=3, minor=11, micro=7, releaselevel='final', serial=0
-PYTHON_VER:str = f"{PYTHON_VER_OBJ.major}.{PYTHON_VER_OBJ.minor}.{PYTHON_VER_OBJ.micro}"
+PYTHON_VER:str = platform.python_version()
 
 #ctx: commands.context.Context
 #不可以ctx: discord.ext.commands.context.Context
