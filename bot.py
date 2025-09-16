@@ -24,6 +24,7 @@ from mod.addlog import serverlog, botlog#不要用print()，而是用botlog().de
 from mod.emoji_role import * #import know_emoji_find_id,know_emoji_find_name,know_id_find_emoji,know_id_find_name,know_name_find_emoji,know_name_find_id#我就一次引入全部了
 from mod.message_process import message_process
 from mod.voice_chat_log import voice_chat_log
+from mod.message_manager import MessageManager
 #from mod.japan_ticket import japan
 import sys
 import platform
@@ -37,14 +38,12 @@ PYTHON_VER:str = f"{PYTHON_VER_OBJ.major}.{PYTHON_VER_OBJ.minor}.{PYTHON_VER_OBJ
 VERSION = "4.2"
 ID,TOKEN,SERVERWEBHOOK,BOTWEBHOOK,MORNING = init()
 counter_for_MOTD = 0
+STATUS_MSG_ID = 1412141519577550921 # 狀態訊息相關變數
 
-# 狀態訊息相關變數
-status_message_id = None
-status_channel = None
+status_channel: MessageManager = None
 bot_start_time = datetime.datetime.now()
 
-#print("\nTOKEN : "+ TOKEN)
-#print("\nID : "+ ID)
+message_manager = None # 建立訊息管理器實例 (在bot初始化後建立)
 
  #--------------------------------------------------------------------------------------------
  
@@ -96,9 +95,7 @@ class penalty_button(discord.ui.View):
         await penalty_button_kick(interaction)
         await interaction.message.edit(view=self)
         
-        
-        
-        
+
  #--------------------------------------------------------------------------------------------
     
 class Lijiu_bot(commands.Bot): #繼承bot
@@ -112,51 +109,23 @@ class Lijiu_bot(commands.Bot): #繼承bot
 bot = Lijiu_bot()
  #--------------------------------------------------------------------------------------------
 
-async def status_message_initial():
-    global status_message_id, status_channel, bot_start_time
-    # 重設bot啟動時間
-    bot_start_time = datetime.datetime.now()
-    
-    # 嘗試恢復現有的狀態訊息監控 (使用你提供的訊息ID)
-    if status_message_id is None:
-        try:
-            # 嘗試在所有可訪問的頻道中尋找指定的訊息ID
-            target_message_id = 1412141519577550921
-            for guild in bot.guilds:
-                for channel in guild.text_channels:
-                    try:
-                        message = await channel.fetch_message(target_message_id)
-                        if message:
-                            status_message_id = target_message_id
-                            status_channel = channel
-                            serverlog().info(f"已恢復狀態監控，頻道: {channel.name}, 訊息ID: {target_message_id}")
-                            break
-                    except discord.NotFound:
-                        continue
-                    except discord.Forbidden:
-                        continue
-                if status_message_id:
-                    break
-        except Exception as e:
-            serverlog().error(f"恢復狀態監控時發生錯誤: {e}")
-    
 @bot.event
 async def on_ready():
-    global status_message_id, status_channel, bot_start_time
+    global status_channel, bot_start_time, message_manager
     botlog().info(">>>>>>>>>已上線<<<<<<<<<")
     botlog().info('目前登入身份：' + os.getlogin() + ":" + str(bot.user))
     bot.add_view(penalty_button()) #讓機器人重新開機後還有辦法使用天罰
     
-    await status_message_initial() #這邊需要refactor
+    # 初始化訊息管理器
+    message_manager = MessageManager(bot)
+    botlog().info("訊息管理器已初始化")
 
     if not presence_loop.is_running():# 以防出現RuntimeError: Task is already launched and is not completed.的狀況
         presence_loop.start() 
     if not check_loop.is_running():
         check_loop.start()
-    if status_message_id and status_channel and not status_update_loop.is_running():
+    if not status_update_loop.is_running():
         status_update_loop.start() #這邊需要refactor
-        serverlog().info("狀態更新循環已啟動")
-    #check_japan_airline_loop.start()#多觀察 多注意 程式有機會死在裡面 已經沒有要看日本機票票價了
     # await roll_call_test()
     
     
@@ -189,10 +158,8 @@ async def check_loop():
 
 @tasks.loop(seconds=30)
 async def status_update_loop():
-    global status_message_id, status_channel
-    # serverlog().debug("status_update_loop")
-    if status_message_id is None or status_channel is None:
-        # serverlog().error("status_message_id or status_channel is None")
+    global STATUS_MSG_ID, status_channel
+    if STATUS_MSG_ID is None or status_channel is None:
         return
     
     try:
@@ -266,19 +233,12 @@ async def status_update_loop():
         
         embed.add_field(name="運作者", value=platform_text, inline=True)
 
-        # 更新訊息
-        message = await status_channel.fetch_message(status_message_id)
-        await message.edit(embed=embed)
+        # 更新訊息 - 使用MessageManager
+        if message_manager:
+            success = await message_manager.update_message(STATUS_MSG_ID, embed)
         
     except Exception as e:
         serverlog().error(f"狀態更新失敗: {e}")
-        # 如果更新失敗，停止循環
-        # status_update_loop.stop()
-    
-#每12個小時監測機票
-#@tasks.loop(hours=12)
-#async def check_japan_airline_loop():
-#    japan().check_airline_price()
 
 
 @bot.event
