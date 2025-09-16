@@ -30,10 +30,10 @@ class MessageManager:
             bool: 更新成功返回True，失敗返回False
         """ 
         if isinstance(content, str):
-            serverlog().debug(f"偵測到文字內容，使用 content 模式更新訊息 {msg_id}")
+            # serverlog().debug(f"偵測到文字內容，使用 content 模式更新訊息 {msg_id}")
             return await self._update_message_content(msg_id, content)
         elif isinstance(content, discord.Embed):
-            serverlog().debug(f"偵測到 Embed 物件，使用 embed 模式更新訊息 {msg_id}")
+            # serverlog().debug(f"偵測到 Embed 物件，使用 embed 模式更新訊息 {msg_id}")
             return await self._update_message_embed(msg_id, content)
         else:
             serverlog().error(f"不支援的內容類型: {type(content)}，僅支援 str 或 discord.Embed")
@@ -54,7 +54,7 @@ class MessageManager:
             # 先檢查快取中是否有該訊息的channel
             if msg_id in self.message_channel_cache:
                 channel = self.message_channel_cache[msg_id]
-                serverlog().debug(f"使用快取的channel: {channel.name}")
+                # serverlog().debug(f"使用快取的channel: {channel.name}")
             else:
                 # 如果快取中沒有，需要搜尋該訊息所在的channel
                 channel = await self._find_message_channel(msg_id)
@@ -65,7 +65,7 @@ class MessageManager:
             # 獲取並更新訊息
             message = await channel.fetch_message(msg_id)
             await message.edit(content=edit_msg)
-            serverlog().info(f"成功更新訊息 {msg_id}: {edit_msg[:50]}...")
+            # serverlog().info(f"成功更新訊息 {msg_id}: {edit_msg[:50]}...")
             return True
             
         except discord.NotFound:
@@ -95,7 +95,7 @@ class MessageManager:
             # 先檢查快取中是否有該訊息的channel
             if msg_id in self.message_channel_cache:
                 channel = self.message_channel_cache[msg_id]
-                serverlog().debug(f"使用快取的channel: {channel.name}")
+                # serverlog().debug(f"使用快取的channel: {channel.name}")
             else:
                 # 如果快取中沒有，需要搜尋該訊息所在的channel
                 channel = await self._find_message_channel(msg_id)
@@ -106,7 +106,7 @@ class MessageManager:
             # 獲取並更新訊息
             message = await channel.fetch_message(msg_id)
             await message.edit(embed=embed)
-            serverlog().info(f"成功更新訊息 {msg_id} 的embed")
+            # serverlog().info(f"成功更新訊息 {msg_id} 的embed")
             return True
             
         except discord.NotFound:
@@ -137,7 +137,7 @@ class MessageManager:
             # 先檢查快取中是否有該訊息的channel
             if msg_id in self.message_channel_cache:
                 channel = self.message_channel_cache[msg_id]
-                serverlog().debug(f"使用快取的channel: {channel.name}")
+                # serverlog().debug(f"使用快取的channel: {channel.name}")
             else:
                 # 如果快取中沒有，需要搜尋該訊息所在的channel
                 channel = await self._find_message_channel(msg_id)
@@ -148,7 +148,7 @@ class MessageManager:
             # 獲取並更新訊息
             message = await channel.fetch_message(msg_id)
             await message.edit(content=content, embed=embed)
-            serverlog().info(f"成功更新訊息 {msg_id} 的內容和embed")
+            # serverlog().info(f"成功更新訊息 {msg_id} 的內容和embed")
             return True
             
         except discord.NotFound:
@@ -173,7 +173,7 @@ class MessageManager:
         Returns:
             discord.TextChannel or None: 找到的頻道物件，找不到則返回None
         """
-        serverlog().debug(f"搜尋訊息 {msg_id} 所在的頻道...")
+        # serverlog().debug(f"搜尋訊息 {msg_id} 所在的頻道...")
         
         for guild in self.bot.guilds:
             for guild_channel in guild.text_channels:
